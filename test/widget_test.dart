@@ -5,18 +5,23 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_flutter_finedust_app/constract/constract.dart';
 
 import 'package:my_flutter_finedust_app/main.dart';
+import 'package:my_flutter_finedust_app/model/air_visual_data.dart';
 
 void main() {
   test('http testing', () async {
     const baseUrl = 'http://api.airvisual.com/v2/nearest_city?key=';
     var response = await http.get(Uri.parse('$baseUrl$AIR_VISUAL_API_KEY'));
     expect(response.statusCode, 200);
+    AirVisualData result = AirVisualData.fromJson(jsonDecode(response.body));
+    expect(result.status, 'success');
   });
 
   /**
