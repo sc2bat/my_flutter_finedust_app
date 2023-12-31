@@ -7,10 +7,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:http/http.dart' as http;
+import 'package:my_flutter_finedust_app/constract/constract.dart';
 
 import 'package:my_flutter_finedust_app/main.dart';
 
 void main() {
+  test('http testing', () async {
+    const baseUrl = 'http://api.airvisual.com/v2/nearest_city?key=';
+    var response = await http.get(Uri.parse('$baseUrl$AIR_VISUAL_API_KEY'));
+    expect(response.statusCode, 200);
+  });
+
+  /**
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
@@ -27,4 +36,6 @@ void main() {
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsOneWidget);
   });
+
+   */
 }
