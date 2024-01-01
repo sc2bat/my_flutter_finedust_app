@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:my_flutter_finedust_app/bloc/air_bloc.dart';
 import 'package:my_flutter_finedust_app/data/http.dart';
 import 'package:my_flutter_finedust_app/logger/logger.dart';
 import 'package:my_flutter_finedust_app/model/air_visual_data.dart';
+
+final airBloc = AirBloc();
 
 class MainHomePage extends StatefulWidget {
   const MainHomePage({super.key});
@@ -42,104 +45,110 @@ class _MainHomePageState extends State<MainHomePage> {
         padding: const EdgeInsets.all(16.0),
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
-            : Column(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  const Text(
-                    '현재 위치 미세먼지',
-                    style: TextStyle(
-                      fontSize: 40.0,
-                    ),
-                  ),
-                  const SizedBox(
-                    height: 16.0,
-                  ),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: _getColor(_airVisualData
-                                    .data?.current?.pollution?.aqius),
-                                borderRadius: BorderRadius.circular(
-                                  16.0,
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceAround,
-                                children: [
-                                  const Icon(
-                                    Icons.face,
-                                  ),
-                                  Text(
-                                    '${_airVisualData.data?.current?.pollution?.aqius}',
-                                    style: const TextStyle(
-                                      fontSize: 32.0,
-                                    ),
-                                  ),
-                                  Text(
-                                    _getTextResult(_airVisualData
-                                        .data?.current?.pollution?.aqius),
-                                    style: const TextStyle(
-                                      fontSize: 24.0,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.face,
-                                  ),
-                                  const SizedBox(
-                                    width: 16.0,
-                                  ),
-                                  Text(
-                                      '${_airVisualData.data?.current?.weather?.tp} ℃'),
-                                ],
-                              ),
-                              Text(
-                                  '습도 ${_airVisualData.data?.current?.weather?.hu} %'),
-                              Text(
-                                  '풍속 ${_airVisualData.data?.current?.weather?.ws} m/s'),
-                            ],
-                          ),
-                        ],
+            : StreamBuilder<AirVisualData>(
+                stream: airBloc.getAirVisualResultData,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return buildDataWidget(snapshot.data);
+                  } else {
+                    return const CircularProgressIndicator();
+                  }
+                }),
+      ),
+    );
+  }
+
+  Widget buildDataWidget(AirVisualData? data) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        const Text(
+          '현재 위치 미세먼지',
+          style: TextStyle(
+            fontSize: 40.0,
+          ),
+        ),
+        const SizedBox(
+          height: 16.0,
+        ),
+        Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: _getColor(
+                          _airVisualData.data?.current?.pollution?.aqius),
+                      borderRadius: BorderRadius.circular(
+                        16.0,
                       ),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 16.0,
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.orange[300],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        const Icon(
+                          Icons.face,
+                        ),
+                        Text(
+                          '${_airVisualData.data?.current?.pollution?.aqius}',
+                          style: const TextStyle(
+                            fontSize: 32.0,
+                          ),
+                        ),
+                        Text(
+                          _getTextResult(
+                              _airVisualData.data?.current?.pollution?.aqius),
+                          style: const TextStyle(
+                            fontSize: 24.0,
+                          ),
+                        ),
+                      ],
                     ),
-                    onPressed: () {
-                      setState(() {
-                        getAirData();
-                      });
-                      logger.info('qwerasdf press button');
-                    },
-                    child: const Icon(
-                      Icons.refresh,
-                      color: Colors.white,
+                  ),
+                ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.face,
+                        ),
+                        const SizedBox(
+                          width: 16.0,
+                        ),
+                        Text('${_airVisualData.data?.current?.weather?.tp} ℃'),
+                      ],
                     ),
-                  )
-                ],
-              ),
-      ),
+                    Text('습도 ${_airVisualData.data?.current?.weather?.hu} %'),
+                    Text('풍속 ${_airVisualData.data?.current?.weather?.ws} m/s'),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(
+          height: 16.0,
+        ),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange[300],
+          ),
+          onPressed: () {
+            airBloc.fetch();
+            logger.info('qwerasdf press button');
+          },
+          child: const Icon(
+            Icons.refresh,
+            color: Colors.white,
+          ),
+        )
+      ],
     );
   }
 }
